@@ -1,6 +1,10 @@
 #include <windows.h>
+#include <tchar.h>
 #include <stdio.h>
 #include <iostream>
+#include <string>
+#include <vector>
+#include <fstream>
 
 using namespace std;
 
@@ -29,7 +33,9 @@ void center_Title(string title) {
 
     WORD originalAttributes = s.wAttributes;
 
-    int padding = ((width - title.size()) / 2) - 1;
+    string header = "New Portfolio: " + title;
+
+    int padding = ((width - header.size()) / 2) - 1;
 
     COORD start = {0, 0};
 
@@ -40,10 +46,11 @@ void center_Title(string title) {
 
     COORD title_pos = {static_cast<SHORT>(padding), 0 };
     SetConsoleCursorPosition(console, title_pos);
-    cout << " " << title << " ";
 
-    int right_fill = width - (padding + title.size()) - 2;
-    COORD right_pos = { static_cast<SHORT>(padding + title.size() + 2), 0 };
+    cout << " " << header << " ";
+
+    int right_fill = width - (padding + header.size()) - 2;
+    COORD right_pos = { static_cast<SHORT>(padding + header.size() + 2), 0 };
     FillConsoleOutputCharacter(console, '=', right_fill, right_pos, &written);
     FillConsoleOutputAttribute(console, BACKGROUND_RED | BACKGROUND_GREEN | BACKGROUND_BLUE, right_fill, right_pos, &written);
 
@@ -53,23 +60,128 @@ void center_Title(string title) {
     SetConsoleTextAttribute(hConsole, originalAttributes);
 }
 
+void openPortfolio(string portfolio){
+    clear_screen();
+    center_Title(portfolio);
+    string PortfolioData;
+    vector<string> row;
+
+    cout<<"     You've opened " << portfolio << " \n \n";
+
+    ifstream ReadFile("../portfolios/"+ portfolio +".txt");
+    while (getline (ReadFile, PortfolioData)) {
+        
+        cout << "   " << PortfolioData << "\n";
+    }
+    Sleep(600000);
+}
+
+void handleViewPortfolio(){
+    string portfolioName;
+    //char choice;
+    bool choosing = true;
+
+    WIN32_FIND_DATAA FindFileData;
+    HANDLE hFind = FindFirstFileA("../portfolios/*.txt", &FindFileData);
+
+    vector<string> portfolios;
+
+    do{
+        string filename(FindFileData.cFileName);
+        filename.erase (filename.end() - 4, filename.end());
+        portfolios.push_back(filename);
+    } while (FindNextFileA(hFind, &FindFileData));
+
+    FindClose(hFind);
+
+    size_t highlight = 0;
+
+    while(choosing == true){
+        //UNBUFFERED INPUT
+        HANDLE hstdin;
+        DWORD  mode;
+
+        hstdin = GetStdHandle( STD_INPUT_HANDLE );
+        GetConsoleMode( hstdin, &mode );
+        SetConsoleMode( hstdin, ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT ); 
+        
+        clear_screen();
+        center_Title("Unnamed");
+        cout<<"     Portfolios availible to view: \n \n ";
+
+        for(size_t i = 0; i < portfolios.size(); i++){
+            if(highlight == i){
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+                cout << "     " << portfolios[i] << " \n";
+                SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+            }
+            else{
+                cout<<"     " << portfolios[i] << " \n";
+            }
+        }
+
+        cout << "\n\n\n\n";
+
+        while (true){
+            if (GetAsyncKeyState(VK_DOWN) & 0x8000) {
+                if(highlight < portfolios.size()-1){
+                    highlight++;
+                }
+            break;
+            }
+            if (GetAsyncKeyState(VK_UP) & 0x8000) {
+                if(highlight > 0){
+                    highlight--;
+                }
+                break;
+            }
+
+            if (GetAsyncKeyState(VK_RETURN) & 0x8000) {
+                openPortfolio(portfolios[highlight]);
+            }
+        }
+        SetConsoleMode( hstdin, mode );
+        //BUFFERED INPUT
+        Sleep(125);
+    }
+
+    clear_screen();
+    center_Title(portfolioName);
+}
+
 void handleCreatePortfolio(){
     string portfolioName;
     char choice;
     clear_screen();
+    center_Title("Unnamed");
     cout<<"Porfolio name: ";
     cin >> portfolioName;
     clear_screen();
     center_Title(portfolioName);
-    cout<<"\n \n New Portfolio created!";
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+    cout<<"\n   New Portfolio created!";
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE );
     Sleep(1500);
+    bool creating = true;
 
-    while(true){
+    while(creating == true){
         clear_screen();
         center_Title(portfolioName);
-        cout<<"[a] Add entries from file \n";
-        cout<<"[b] Add entries manually \n";
-        cin >> choice;
+
+        //UNBUFFERED INPUT
+        HANDLE hstdin;
+        DWORD  mode;
+
+        hstdin = GetStdHandle( STD_INPUT_HANDLE );
+        GetConsoleMode( hstdin, &mode );
+        SetConsoleMode( hstdin, ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT ); 
+
+        cout<<" [a] Add entries from file \n";
+        cout<<" [b] Add entries manually \n";
+        cout<<" [q] Quit \n";
+        choice = getchar();
+        SetConsoleMode( hstdin, mode );
+        //BUFFERED INPUT
         switch(choice){
         case 'a':
             clear_screen();
@@ -85,7 +197,32 @@ void handleCreatePortfolio(){
             //handleManualEntries()
             Sleep(1500);
             break;
-    }
+        case 'q':
+            clear_screen();
+            center_Title(portfolioName);
+            cout << "   Are you sure? Progress will be lost. \n\n";
+            //UNBUFFERED INPUT
+            HANDLE hstdin;
+            DWORD  mode;
+
+            hstdin = GetStdHandle( STD_INPUT_HANDLE );
+            GetConsoleMode( hstdin, &mode );
+            SetConsoleMode( hstdin, ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT ); 
+
+            cout<<"     [y] Yes, I want to quit to main menu. \n";
+            cout<<"     [n] No, I want to keep my progress. \n";
+            choice = getchar();
+            SetConsoleMode( hstdin, mode );
+            //BUFFERED INPUT
+
+            switch(choice){
+                case 'y':
+                    creating = false;
+                    break;
+                case 'n':
+                    break;
+            }
+        }
     }
 }
 
@@ -111,14 +248,24 @@ int main(){
 
     clear_screen();
     while(running == true){
-        printf("What do you want to do?\n \n");
-        printf("[v] View dividend portfolio \n");
-        printf("[c] Create dividend portfolio \n");
-        printf("[e] Edit existing dividend portfolio \n");
-        printf("[q] Quit program \n");
-        cin >> choice;
+        HANDLE hstdin;
+        DWORD  mode;
+
+        hstdin = GetStdHandle( STD_INPUT_HANDLE );
+        GetConsoleMode( hstdin, &mode );
+        SetConsoleMode( hstdin, ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT ); 
+
+        cout << "What do you want to do?\n \n";
+        cout<<"[v] View dividend portfolio \n";
+        cout<<"[c] Create dividend portfolio \n";
+        cout<<"[e] Edit existing dividend portfolio \n";
+        cout<<"[q] Quit program \n";
+        choice = getchar();
+
+        SetConsoleMode( hstdin, mode );
         switch(choice){
             case 'v':
+                handleViewPortfolio();
                 break;
             case 'c':
                 handleCreatePortfolio();

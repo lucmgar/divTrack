@@ -22,7 +22,63 @@ void clear_screen(char fill = ' ') {
     SetConsoleCursorPosition(console, tl);
 }
 
-void center_Title(string title) { 
+void printTitle(){
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+    printf("\n");
+    printf("      _____  _    _______             _    \n");
+    printf("     |  __ \\(_)  |__   __|           | |   \n");
+    printf("     | |  | |___   _| |_ __ __ _  ___| | __\n");
+    printf("     | |  | | \\ \\ / / | '__/ _` |/ __| |/ /\n");
+    printf("     | |__| | |\\ V /| | | | (_| | (__|   < \n");
+    printf("     |_____/|_| \\_/ |_|_|  \\__,_|\\___|_|\\_\\\n");
+    printf("                                           \n");
+    printf("            Version 0.0                              \n");
+    Sleep(750);
+    clear_screen();
+    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+
+    printf("\n");
+    printf("      _____  _    _______             _    \n");
+    printf("     |  __ \\(_)  |__   __|           | |   \n");
+    printf("     | |  | |___   _| |_ __ __ _  ___| | __\n");
+    printf("     | |  | | \\ \\ / / | '__/ _` |/ __| |/ /\n");
+    printf("     | |__| | |\\ V /| | | | (_| | (__|   < \n");
+    printf("     |_____/|_| \\_/ |_|_|  \\__,_|\\___|_|\\_\\\n");
+    printf("                                           \n");
+    printf("            Version 0.0                              \n");
+    Sleep(750);
+    clear_screen();
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+
+    printf("\n");
+    printf("      _____  _    _______             _    \n");
+    printf("     |  __ \\(_)  |__   __|           | |   \n");
+    printf("     | |  | |___   _| |_ __ __ _  ___| | __\n");
+    printf("     | |  | | \\ \\ / / | '__/ _` |/ __| |/ /\n");
+    printf("     | |__| | |\\ V /| | | | (_| | (__|   < \n");
+    printf("     |_____/|_| \\_/ |_|_|  \\__,_|\\___|_|\\_\\\n");
+    printf("                                           \n");
+    printf("            Version 0.0                              \n");
+    Sleep(750);
+    clear_screen();
+    SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
+
+    printf("\n");
+    printf("      _____  _    _______             _    \n");
+    printf("     |  __ \\(_)  |__   __|           | |   \n");
+    printf("     | |  | |___   _| |_ __ __ _  ___| | __\n");
+    printf("     | |  | | \\ \\ / / | '__/ _` |/ __| |/ /\n");
+    printf("     | |__| | |\\ V /| | | | (_| | (__|   < \n");
+    printf("     |_____/|_| \\_/ |_|_|  \\__,_|\\___|_|\\_\\\n");
+    printf("                                           \n");
+    printf("            Version 0.0                              \n");
+    Sleep(750);
+    clear_screen();
+    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    }
+
+void center_Title(string action,string title) { 
     CONSOLE_SCREEN_BUFFER_INFO s;
     HANDLE console = GetStdHandle(STD_OUTPUT_HANDLE);
     GetConsoleScreenBufferInfo(console, &s);
@@ -33,7 +89,25 @@ void center_Title(string title) {
 
     WORD originalAttributes = s.wAttributes;
 
-    string header = "New Portfolio: " + title;
+    string prefix = "";
+
+    if(action == "mainmenu"){
+        prefix = "Main Menu";
+    }
+    else if(action == "add"){
+        prefix = "New Portfolio: ";
+    }
+    else if (action == "view"){
+        prefix = "Viewing: ";
+    }
+    else if (action == "view"){
+        prefix = "Editing: ";
+    }
+    else {
+        prefix = "";
+    }
+
+    string header = prefix + title;
 
     int padding = ((width - header.size()) / 2) - 1;
 
@@ -62,13 +136,13 @@ void center_Title(string title) {
 
 void openPortfolio(string portfolio){
     clear_screen();
-    center_Title(portfolio);
+    center_Title("view", portfolio);
     string PortfolioData;
     vector<string> row;
 
     cout<<"     You've opened " << portfolio << " \n \n";
 
-    ifstream ReadFile("../portfolios/"+ portfolio +".txt");
+    ifstream ReadFile("./portfolios/"+ portfolio +".txt");
     while (getline (ReadFile, PortfolioData)) {
         
         cout << "   " << PortfolioData << "\n";
@@ -82,7 +156,7 @@ void handleViewPortfolio(){
     bool choosing = true;
 
     WIN32_FIND_DATAA FindFileData;
-    HANDLE hFind = FindFirstFileA("../portfolios/*.txt", &FindFileData);
+    HANDLE hFind = FindFirstFileA("./portfolios/*.txt", &FindFileData);
 
     vector<string> portfolios;
 
@@ -106,7 +180,7 @@ void handleViewPortfolio(){
         SetConsoleMode( hstdin, ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT ); 
         
         clear_screen();
-        center_Title("Unnamed");
+        center_Title("view"," ");
         cout<<"     Portfolios availible to view: \n \n ";
 
         for(size_t i = 0; i < portfolios.size(); i++){
@@ -146,18 +220,18 @@ void handleViewPortfolio(){
     }
 
     clear_screen();
-    center_Title(portfolioName);
+    center_Title("view",portfolioName);
 }
 
 void handleCreatePortfolio(){
     string portfolioName;
     char choice;
     clear_screen();
-    center_Title("Unnamed");
+    center_Title("add","Unnamed");
     cout<<"Porfolio name: ";
     cin >> portfolioName;
     clear_screen();
-    center_Title(portfolioName);
+    center_Title("add",portfolioName);
     SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_INTENSITY);
     cout<<"\n   New Portfolio created!";
     SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE );
@@ -166,7 +240,7 @@ void handleCreatePortfolio(){
 
     while(creating == true){
         clear_screen();
-        center_Title(portfolioName);
+        center_Title("add",portfolioName);
 
         //UNBUFFERED INPUT
         HANDLE hstdin;
@@ -185,21 +259,21 @@ void handleCreatePortfolio(){
         switch(choice){
         case 'a':
             clear_screen();
-            center_Title(portfolioName);
+            center_Title("add",portfolioName);
             cout << "Not implemented yet.";
             Sleep(1500);
             //handleFileEntries()
             break;
         case 'b':
             clear_screen();
-            center_Title(portfolioName);
+            center_Title("add",portfolioName);
             cout << "Not implemented yet.";
             //handleManualEntries()
             Sleep(1500);
             break;
         case 'q':
             clear_screen();
-            center_Title(portfolioName);
+            center_Title("add",portfolioName);
             cout << "   Are you sure? Progress will be lost. \n\n";
             //UNBUFFERED INPUT
             HANDLE hstdin;
@@ -232,19 +306,7 @@ int main(){
 
     clear_screen();
 
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
-
-    printf("  _____  _    _______             _    \n");
-    printf(" |  __ \\(_)  |__   __|           | |   \n");
-    printf(" | |  | |___   _| |_ __ __ _  ___| | __\n");
-    printf(" | |  | | \\ \\ / / | '__/ _` |/ __| |/ /\n");
-    printf(" | |__| | |\\ V /| | | | (_| | (__|   < \n");
-    printf(" |_____/|_| \\_/ |_|_|  \\__,_|\\___|_|\\_\\\n");
-    printf("                                       \n");
-    printf("Version 0.0                              \n");
-    Sleep(2000);
-
-    SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+    printTitle();
 
     clear_screen();
     while(running == true){
@@ -253,13 +315,15 @@ int main(){
 
         hstdin = GetStdHandle( STD_INPUT_HANDLE );
         GetConsoleMode( hstdin, &mode );
-        SetConsoleMode( hstdin, ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT ); 
+        SetConsoleMode( hstdin, ENABLE_ECHO_INPUT | ENABLE_PROCESSED_INPUT );
 
-        cout << "What do you want to do?\n \n";
-        cout<<"[v] View dividend portfolio \n";
-        cout<<"[c] Create dividend portfolio \n";
-        cout<<"[e] Edit existing dividend portfolio \n";
-        cout<<"[q] Quit program \n";
+        center_Title("mainmenu","");
+
+        cout << " What do you want to do?\n \n";
+        cout<<" [v] View dividend portfolio \n";
+        cout<<" [c] Create dividend portfolio \n";
+        cout<<" [e] Edit existing dividend portfolio \n";
+        cout<<" [q] Quit program \n";
         choice = getchar();
 
         SetConsoleMode( hstdin, mode );

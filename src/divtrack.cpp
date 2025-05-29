@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <bits/stdc++.h>
 
 using namespace std;
 
@@ -33,7 +34,7 @@ void printTitle(){
     printf("     | |__| | |\\ V /| | | | (_| | (__|   < \n");
     printf("     |_____/|_| \\_/ |_|_|  \\__,_|\\___|_|\\_\\\n");
     printf("                                           \n");
-    printf("            Version 0.0                              \n");
+    printf("            Version 0.0                              \n\n\n");
     Sleep(750);
     clear_screen();
     SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
@@ -46,7 +47,7 @@ void printTitle(){
     printf("     | |__| | |\\ V /| | | | (_| | (__|   < \n");
     printf("     |_____/|_| \\_/ |_|_|  \\__,_|\\___|_|\\_\\\n");
     printf("                                           \n");
-    printf("            Version 0.0                              \n");
+    printf("            Version 0.0                              \n\n\n");
     Sleep(750);
     clear_screen();
     SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
@@ -59,7 +60,7 @@ void printTitle(){
     printf("     | |__| | |\\ V /| | | | (_| | (__|   < \n");
     printf("     |_____/|_| \\_/ |_|_|  \\__,_|\\___|_|\\_\\\n");
     printf("                                           \n");
-    printf("            Version 0.0                              \n");
+    printf("            Version 0.0                              \n\n\n");
     Sleep(750);
     clear_screen();
     SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN | FOREGROUND_INTENSITY);
@@ -72,7 +73,7 @@ void printTitle(){
     printf("     | |__| | |\\ V /| | | | (_| | (__|   < \n");
     printf("     |_____/|_| \\_/ |_|_|  \\__,_|\\___|_|\\_\\\n");
     printf("                                           \n");
-    printf("            Version 0.0                              \n");
+    printf("            Version 0.0                              \n\n\n");
     Sleep(750);
     clear_screen();
     SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
@@ -140,14 +141,38 @@ void openPortfolio(string portfolio){
     string PortfolioData;
     vector<string> row;
 
-    cout<<"     You've opened " << portfolio << " \n \n";
+    cout<<"   " << portfolio << " \n \n";
 
     ifstream ReadFile("./portfolios/"+ portfolio +".txt");
+    vector<vector<string>> tabledata;
     while (getline (ReadFile, PortfolioData)) {
-        
-        cout << "   " << PortfolioData << "\n";
+        stringstream ss(PortfolioData);
+        string word;
+
+        vector<string> row;
+
+        for(int i = 0; i < 4; i++){
+            getline(ss, word, ',');
+                row.push_back(word);
+        }
+
+        tabledata.push_back(row);
     }
-    Sleep(600000);
+
+    printf( "%10s %10s %10s %10s\n", "Ticker", "Date", "Amount", "Currency");
+    for(int i = 1; i < tabledata.size(); i++){
+        printf( "%10s %10s %10s %10s\n", tabledata[i][0].c_str(), tabledata[i][1].c_str(), tabledata[i][2].c_str(), tabledata[i][3].c_str());
+    }
+    Sleep(200);
+
+    bool viewing = true;
+    while (viewing == true){
+        if (GetAsyncKeyState(VK_RETURN) & 0x8000) {
+            viewing = false;
+            return;
+        }
+    }
+    return;
 }
 
 void handleViewPortfolio(){
@@ -181,7 +206,7 @@ void handleViewPortfolio(){
         
         clear_screen();
         center_Title("view"," ");
-        cout<<"     Portfolios availible to view: \n \n ";
+        cout<<"     Portfolios availible to view: \n \n";
 
         for(size_t i = 0; i < portfolios.size(); i++){
             if(highlight == i){
@@ -212,6 +237,7 @@ void handleViewPortfolio(){
 
             if (GetAsyncKeyState(VK_RETURN) & 0x8000) {
                 openPortfolio(portfolios[highlight]);
+                break;
             }
         }
         SetConsoleMode( hstdin, mode );

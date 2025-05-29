@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include "divTrack.h"
 #include <bits/stdc++.h>
 
 using namespace std;
@@ -135,42 +136,90 @@ void center_Title(string action,string title) {
     SetConsoleTextAttribute(hConsole, originalAttributes);
 }
 
-void openPortfolio(string portfolio){
+portfolioSummary(string portfolio, vector<vector<string>>tabledata){
     clear_screen();
-    center_Title("view", portfolio);
-    string PortfolioData;
-    vector<string> row;
+    center_Title("view","Portfolio");
+    cout << "   You're viewing a summary of " << portfolio << "\n";
+    Sleep(4000);
+};
 
-    cout<<"   " << portfolio << " \n \n";
-
-    ifstream ReadFile("./portfolios/"+ portfolio +".txt");
-    vector<vector<string>> tabledata;
-    while (getline (ReadFile, PortfolioData)) {
-        stringstream ss(PortfolioData);
-        string word;
-
+void openPortfolio(string portfolio){
+    try{
+        clear_screen();
+        center_Title("view", portfolio);
+        string PortfolioData;
         vector<string> row;
 
-        for(int i = 0; i < 4; i++){
-            getline(ss, word, ',');
-                row.push_back(word);
+        ifstream ReadFile("./portfolios/"+ portfolio +".txt");
+        vector<vector<string>> tabledata;
+        getline(ReadFile, PortfolioData); //Skips over first line (headers)
+        while (getline (ReadFile, PortfolioData)) {
+            stringstream ss(PortfolioData);
+            string token;
+            string word;
+            string dateString;
+            int date[3];
+
+            vector<string> row;
+
+            for(int i = 0; i < 4; i++){
+                getline(ss, word, ',');
+                    row.push_back(word);
+            }
+
+            dateString = row[1];
+
+            stringstream dss(dateString);
+
+            getline(dss, token, '-');
+            date [0] = stoi(token);
+
+            getline(dss, token, '-');
+            date [1] = stoi(token);
+
+            getline(dss, token, '-');
+            date [2] = stoi(token);
+
+            if(!isValidDate(date[0], date[1], date[2])){
+                throw tabledata.size();
+            }
+
+            tabledata.push_back(row);
         }
 
-        tabledata.push_back(row);
-    }
+        tabledata = sortByDate(tabledata);
 
-    printf( "%10s %10s %10s %10s\n", "Ticker", "Date", "Amount", "Currency");
-    for(int i = 1; i < tabledata.size(); i++){
-        printf( "%10s %10s %10s %10s\n", tabledata[i][0].c_str(), tabledata[i][1].c_str(), tabledata[i][2].c_str(), tabledata[i][3].c_str());
-    }
-    Sleep(200);
+        cout<<"   " << portfolio << " - " << tabledata.size() << " entries" <<" \n \n";
 
-    bool viewing = true;
-    while (viewing == true){
-        if (GetAsyncKeyState(VK_RETURN) & 0x8000) {
-            viewing = false;
-            return;
+        printf( "%10s %15s %10s %10s\n", "Ticker", "Date", "Amount", "Currency");
+        for(int i = 0; i < tabledata.size(); i++){
+            printf( "%10s %15s %10s %10s\n", tabledata[i][0].c_str(), tabledata[i][1].c_str(), tabledata[i][2].c_str(), tabledata[i][3].c_str());
         }
+
+        bool viewing = true;
+        while (viewing == true){
+            if (GetAsyncKeyState(VK_RETURN) & 0x8000) {
+                viewing = false;
+                portfolioSummary(portfolio, tabledata);
+                return;
+            }
+        }
+    }
+    catch (size_t invalidRow){
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+        cout << "Error:";
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << " Invalid date at row #" << invalidRow << ". \n Check the date and try again";
+        Sleep(3000);
+    }
+        catch (...){
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_INTENSITY);
+        cout << "   Error:";
+        SetConsoleTextAttribute(hConsole, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
+        cout << " There was an error opening this file. Ensure the format matches: \n\n";
+        cout << "           Ticker,Date,Amount,Currency\n";
+        cout << "           EXMP,01-01-2000,1.01,USD";
+        Sleep(5000);
     }
     return;
 }
@@ -236,7 +285,14 @@ void handleViewPortfolio(){
             }
 
             if (GetAsyncKeyState(VK_RETURN) & 0x8000) {
+                while (GetAsyncKeyState(VK_RETURN) & 0x8000);
                 openPortfolio(portfolios[highlight]);
+                break;
+            }
+            if (GetAsyncKeyState(0x51) & 0x8000) {
+                choosing = false;
+                while (GetAsyncKeyState(0x51) & 0x8000);
+                FlushConsoleInputBuffer(GetStdHandle(STD_INPUT_HANDLE)); 
                 break;
             }
         }
@@ -246,7 +302,6 @@ void handleViewPortfolio(){
     }
 
     clear_screen();
-    center_Title("view",portfolioName);
 }
 
 void handleCreatePortfolio(){

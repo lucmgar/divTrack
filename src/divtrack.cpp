@@ -140,7 +140,8 @@ portfolioSummary(string portfolio, vector<vector<string>>tabledata){
     clear_screen();
     center_Title("view","Portfolio");
     cout << "   You're viewing a summary of " << portfolio << "\n";
-    Sleep(4000);
+    drawMonthGraph();
+    Sleep(16000);
 };
 
 void openPortfolio(string portfolio){
@@ -266,7 +267,10 @@ void handleViewPortfolio(){
             else{
                 cout<<"     " << portfolios[i] << " \n";
             }
+
         }
+
+        cout << "\n     [q] Go Back";
 
         cout << "\n\n\n\n";
 
